@@ -91,10 +91,6 @@ int main(){
     }
 
     *readptr = 0;
-    //close the semaphore
-    // sem_close(sem1);
-    // sem_close(sem2);
-    // sem_close(sem3);
     printf("Shared memory initialized...\n");
     return 0;
 }
