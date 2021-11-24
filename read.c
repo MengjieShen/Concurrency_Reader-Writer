@@ -13,15 +13,22 @@
 
 int main() 
 { 
-    int shmid = 32;
+    int id;
+    int shmid = 41777;
     key_t key;
     char *shm;
 
-    //We need the segment with key 9999 that was created by the writer process
-    key = 9999; 
+    sem_t *sem1 = sem_open("/order", O_CREAT, 0666, 1);
+    sem_t *sem2 = sem_open("/wrt", O_CREAT, 0666, 1);
+    sem_t *sem3 = sem_open("/mutex", O_CREAT, 0666, 1);
 
+    sem_wait(sem1);
+    sem_wait(sem3);
+    sem_wait(sem1);
+
+    id = shmget(shmid, sizeof(struct studentInfo)*50, IPC_CREAT | 0666);
     //Attach the segment to the data space
-    shm = shmat(shmid , NULL , 0);
+    shm = shmat(id , NULL , 0);
 
     //check for failure
     if (shm == (char *) -1)
