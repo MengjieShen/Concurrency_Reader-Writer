@@ -1,0 +1,11 @@
+all: start end read
+
+start: start.c helper.h
+	gcc -Wall -o start start.c -lpthread
+end: end.c helper.h
+	gcc -Wall -o end end.c -lpthread
+read: read.c helper.h 
+	gcc -Wall -o read read.c -lpthread
+
+clean:
+	rm -f start end read write *~ core
