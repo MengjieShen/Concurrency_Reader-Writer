@@ -11,8 +11,29 @@
 #define SHMSIZE 1024 //size of shared memory
 
 
-int main() 
+int main(int argc, char *argv[]) 
 { 
+    // check customized command
+	float lb;
+	float ub;
+	int shmid;
+	int semid;
+    int time;
+    const char* fileName;
+	for (int q = 0; q < argc; q++)
+	{
+		if (strcmp(argv[q], "-f") == 0)
+			fileName = argv[q + 1];
+		if (strcmp(argv[q], "-r") == 0)
+            lb = atoi(argv[q + 1]);
+			ub = atof(argv[q + 2]);
+		if (strcmp(argv[q], "-s") == 0)
+			shmid = atoi(argv[q + 1]);
+		if (strcmp(argv[q], "-d") == 0)
+			time = argv[q + 1];
+	}
+
+
     int id;
     key_t key1, key2, key3;
     key1 = 9999;

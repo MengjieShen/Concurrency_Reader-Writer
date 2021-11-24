@@ -9,6 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <semaphore.h>
+#include <string.h>
 #include "helper.h"
 #define FACTOR 10e4 /* Used to generate random microseconds */
 
@@ -27,6 +28,10 @@ int main(){
     sem_t *sem1;
     sem_t *sem2;
     sem_t *sem3;
+    const char* fileName = "student.txt";
+    FILE* studentFile;
+    struct studentInfo* infoptr;
+    struct studentInfo arr[50];
 
     // initialize there semaphores
 
@@ -68,10 +73,16 @@ int main(){
     key_t key2;
     key2 = 41777;
     //initialize and allocate the shared memory segment for student info data
-    infoID = shmget(key2, sizeof(struct studentInfo)*50, 0666|IPC_CREAT);/* get shared memory to store data*/
+    infoID = shmget(key2, sizeof(struct studentInfo) * 50, 0666|IPC_CREAT);/* get shared memory to store data*/
     if (infoID < 0) {
         perror("create: shmget failed");
         exit(1);
+    }
+
+    infoptr = (struct studentInfo*) shmat(infoID, 0, 0);
+    if (infoptr <= (struct studentInfo*)(0)) {
+        perror("create: shmat failed");
+        exit(2);
     }
 
     key_t key3;
@@ -91,6 +102,28 @@ int main(){
     }
 
     *readptr = 0;
-    printf("Shared memory initialized...\n");
+
+    /* handling the student record file */
+    studentFile = fopen(fileName, "r");
+    if (studentFile == NULL)
+    {
+        fprintf(stderr, "Couldn't open file\n");
+        exit(1);
+    }
+
+    char buffer[1024];
+    int row = 0;
+    while((fscanf(studentFile, "%[^\n]\n", buffer))!= EOF){
+        char *ID = strtok(buffer, ",");
+        strcpy(infoptr[0].ID, ID);
+        char *name = strtok(NULL, ",");
+        strcpy(infoptr[row].name, name);
+        char *grades = strtok(NULL, ",");
+        strcpy(infoptr[row].grades, grades);
+        infoptr[row].GPA = atof(strtok(NULL, ","));
+        row++;
+    }
+    printf("Shared memory initialized and file loaded.\n");
+    fclose(studentFile);
     return 0;
 }

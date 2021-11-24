@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include "helper.h"
   
-int main() 
+int main(int argc, char *argv[]) 
 { 
     int id;
     key_t key1, key2, key3;

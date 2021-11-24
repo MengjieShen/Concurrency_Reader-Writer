@@ -9,7 +9,7 @@ struct logData
 
 struct studentInfo
 {
-    char ID[8];
+    char ID[20];
     char name[20];
     char grades[24];
     float GPA;
