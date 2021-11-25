@@ -14,3 +14,6 @@ struct studentInfo
     char grades[24];
     float GPA;
 };
+
+float GPA(char* grade);
+float GPA_calculator(char* grade);

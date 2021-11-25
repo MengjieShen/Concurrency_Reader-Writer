@@ -1,17 +1,25 @@
+#include <errno.h>
+#include <math.h> // log
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <semaphore.h>
-#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
+#include <semaphore.h>
+#include <string.h>
 #include "helper.h"
   
 int main(int argc, char *argv[]) 
 { 
+    int lb;
+	int ub;
+	int shmid;
+    int time;
     int id;
+    // char input[100];
     key_t key1, key2, key3;
     key1 = 9999;
     key2 = 41777;
@@ -20,7 +28,25 @@ int main(int argc, char *argv[])
     int infoID;
     int readCount;
     int* readptr;
-
+    const char* fileName;
+    struct studentInfo* infoptr;
+    char* modi_grades[100];
+	for (int q = 0; q < argc; q++)
+	{
+		if (strcmp(argv[q], "-f") == 0){
+            fileName = argv[q + 1];
+        }
+		if (strcmp(argv[q], "-r") == 0){
+            lb = atoi(argv[q + 1]);
+			ub = atoi(argv[q + 2]);         
+        }
+		if (strcmp(argv[q], "-s") == 0){
+            shmid = atoi(argv[q + 1]);
+        }
+		if (strcmp(argv[q], "-d") == 0){
+            time = atoi(argv[q + 1]);
+        }
+	}
     sem_t *sem1 = sem_open("/order", O_CREAT, 0666, 1);
     sem_t *sem2 = sem_open("/wrt", O_CREAT, 0666, 1);
     sem_t *sem3 = sem_open("/mutex", O_CREAT, 0666, 1);
@@ -49,6 +75,12 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    infoptr = (struct studentInfo*) shmat(infoID, 0, 0);
+    if (infoptr <= (struct studentInfo*)(0)) {
+        perror("create: shmat failed");
+        exit(2);
+    }
+
     readCount = shmget(key3, sizeof(int), 0666|IPC_CREAT);
     if (readCount < 0) {
         perror("create: shmget failed for read_count");
@@ -65,11 +97,56 @@ int main(int argc, char *argv[])
     sem_wait(sem1);
     sem_wait(sem2);
     sem_post(sem1);
-    printf("Write Data : "); 
-    // gets(readptr);  //get input from user
-    *readptr = 3;
-    printf("Data written in memory: %d\n",*readptr); 
+
+    /* start of the critical section */
+    int total_num;
+    total_num = (rand() % (ub - lb + 1))+1;
+    // printf("ub: %d \n", ub);
+    // printf("lb: %d \n", lb);
+    int record_list[total_num];
+    for (int i = 0; i<total_num; i++){
+        record_list[i] = (rand() %(ub - lb + 1)) + lb;
+        // printf("test: %d \n",record_list[i]);
+    }
     
+    //remove duplicate 
+    int i, j,temp;
+       for(i=0;i<total_num;i++){
+           for(j=i+1;j<total_num;j++){
+            if(record_list[i]==record_list[j]){
+                record_list[j]=record_list[total_num-1];
+                total_num--;
+            }
+        }
+    }
+
+    for (int i = 0; i< total_num; i++){
+        printf(" test test test %d\n", record_list[i]);
+    }
+
+    printf("You will change %d students record.\n", total_num);
+
+    int list_count = 0;
+    for (int i = 0; i < 50; i++){
+        if (i == record_list[list_count]){
+            printf("here: %d", record_list[i]);
+            printf("You will change student with ID %s with grades %s\n", infoptr[i].ID, infoptr[i].grades);
+            printf("Please type in the updated grade and split with the blank space between each grade: \n Example: A A B+.\n"); 
+            scanf("%[^\n]%*c", &modi_grades);
+            strcpy(infoptr[i].grades, modi_grades);
+            infoptr[i].GPA = GPA_calculator(modi_grades);
+            // printf("test grades: %s \n", infoptr[i].grades);
+            printf("Data modified in memory: ID: %s Student Name:%s grades: %s GPA: %lf,\n",infoptr[i].ID, infoptr[i].name, infoptr[i].grades, infoptr[i].GPA);
+            list_count ++;
+        }
+        
+        if(strncmp(infoptr[i].ID, "", 1) == 0){
+            break;
+        }
+        
+    }
+    sleep(time);
+    /* end of the critical section */
     sem_post(sem2);
     //detach from shared memory  
     shmdt(p); 

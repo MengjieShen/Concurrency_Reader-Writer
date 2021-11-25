@@ -115,7 +115,7 @@ int main(){
     int row = 0;
     while((fscanf(studentFile, "%[^\n]\n", buffer))!= EOF){
         char *ID = strtok(buffer, ",");
-        strcpy(infoptr[0].ID, ID);
+        strcpy(infoptr[row].ID, ID);
         char *name = strtok(NULL, ",");
         strcpy(infoptr[row].name, name);
         char *grades = strtok(NULL, ",");

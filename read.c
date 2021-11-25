@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
 	int lb;
 	int ub;
 	int shmid;
-	int semid;
     int time;
     const char* fileName;
     struct studentInfo* infoptr;
@@ -102,11 +101,11 @@ int main(int argc, char *argv[])
 
     /*Beginning of critical section */
     int total_num;
-    total_num = (rand() % (ub - lb + 1));
+    total_num = (rand() % (ub - lb + 1))+1;
     int record_list[total_num];
     for (int i = 0; i<total_num; i++){
         record_list[i] = (rand() %(ub - lb + 1)) + lb;
-        printf("test: %d \n",record_list[i]);
+        // printf("test: %d \n",record_list[i]);
     }
     
     //remove duplicate 
@@ -121,10 +120,14 @@ int main(int argc, char *argv[])
     }
 
     int row_count = 0;
-    for (int i = 0; i< total_num; i++){
+    for (int i = 0; i< 50; i++){
         if (row_count == record_list[i]){
-            printf("ID: %s Student Name:%s grades: %s GPA: %lf\n",
+            // printf("row count test: %d", row_count);
+            printf("ID: %s Student Name:%s grades: %s GPA: %.2lf\n",
                     infoptr[row_count].ID, infoptr[row_count].name, infoptr[row_count].grades, infoptr[row_count].GPA);
+        }
+        if(strncmp(infoptr[row_count].ID, "", 1) == 0){
+            break;
         }
         row_count ++;
     }
@@ -142,7 +145,7 @@ int main(int argc, char *argv[])
     sem_post(sem1);
     sem_post(sem3);
 
-    printf("Data read from memory: %d\n",*readptr); 
+    // printf("Data read from memory: %d\n",*readptr); 
       
     sem_wait(sem3);
     *readptr -= 1;
