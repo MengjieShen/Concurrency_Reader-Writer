@@ -13,26 +13,31 @@
 
 int main(int argc, char *argv[]) 
 { 
+    srand(time(0));
     // check customized command
-	float lb;
-	float ub;
+	int lb;
+	int ub;
 	int shmid;
 	int semid;
     int time;
     const char* fileName;
+    struct studentInfo* infoptr;
 	for (int q = 0; q < argc; q++)
 	{
-		if (strcmp(argv[q], "-f") == 0)
-			fileName = argv[q + 1];
-		if (strcmp(argv[q], "-r") == 0)
+		if (strcmp(argv[q], "-f") == 0){
+            fileName = argv[q + 1];
+        }
+		if (strcmp(argv[q], "-r") == 0){
             lb = atoi(argv[q + 1]);
-			ub = atof(argv[q + 2]);
-		if (strcmp(argv[q], "-s") == 0)
-			shmid = atoi(argv[q + 1]);
-		if (strcmp(argv[q], "-d") == 0)
-			time = argv[q + 1];
+			ub = atoi(argv[q + 2]);         
+        }
+		if (strcmp(argv[q], "-s") == 0){
+            shmid = atoi(argv[q + 1]);
+        }
+		if (strcmp(argv[q], "-d") == 0){
+            time = atoi(argv[q + 1]);
+        }
 	}
-
 
     int id;
     key_t key1, key2, key3;
@@ -72,6 +77,12 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    infoptr = (struct studentInfo*) shmat(infoID, 0, 0);
+    if (infoptr <= (struct studentInfo*)(0)) {
+        perror("create: shmat failed");
+        exit(2);
+    }
+
     readCount = shmget(key3, sizeof(int), 0666|IPC_CREAT);
     if (readCount < 0) {
         perror("create: shmget failed for read_count");
@@ -84,14 +95,50 @@ int main(int argc, char *argv[])
         perror("create: shmat failed for read_count");
         exit(2);
     }
-    printf("here\n");
+    // printf("here\n");
     sem_wait(sem1);
     sem_wait(sem3);
+
+
+    /*Beginning of critical section */
+    int total_num;
+    total_num = (rand() % (ub - lb + 1));
+    int record_list[total_num];
+    for (int i = 0; i<total_num; i++){
+        record_list[i] = (rand() %(ub - lb + 1)) + lb;
+        printf("test: %d \n",record_list[i]);
+    }
+    
+    //remove duplicate 
+    int i, j,temp;
+       for(i=0;i<total_num;i++){
+           for(j=i+1;j<total_num;j++){
+            if(record_list[i]==record_list[j]){
+                record_list[j]=record_list[total_num-1];
+                total_num--;
+            }
+        }
+    }
+
+    int row_count = 0;
+    for (int i = 0; i< total_num; i++){
+        if (row_count == record_list[i]){
+            printf("ID: %s Student Name:%s grades: %s GPA: %lf\n",
+                    infoptr[row_count].ID, infoptr[row_count].name, infoptr[row_count].grades, infoptr[row_count].GPA);
+        }
+        row_count ++;
+    }
+
+
+    // printf("total_num: %d\n", total_num);
+
+    sleep(time);
+    /*End of critical section */
     *readptr += 1;
-    printf("test: %d", *readptr);
     if (*readptr == 1){
         sem_wait(sem2);
     }
+
     sem_post(sem1);
     sem_post(sem3);
 

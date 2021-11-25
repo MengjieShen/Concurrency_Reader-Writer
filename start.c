@@ -31,7 +31,7 @@ int main(){
     const char* fileName = "student.txt";
     FILE* studentFile;
     struct studentInfo* infoptr;
-    struct studentInfo arr[50];
+    // struct studentInfo arr[50];
 
     // initialize there semaphores
 
