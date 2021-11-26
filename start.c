@@ -150,5 +150,6 @@ int main(int argc, char *argv[]){
     shmdt(logptr); 
     shmdt(readptr); 
     shmdt(infoptr);
+    sem_close(sem1);
     return 0;
 }

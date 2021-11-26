@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 	int lb;
 	int ub;
 	// int shmid;
-    int time;
+    int time = 0;
     // const char* fileName;
     struct studentInfo* infoptr;
     char log[] = "log";
@@ -42,6 +42,12 @@ int main(int argc, char *argv[])
         }
 	}
 
+    if(lb < 0){
+        lb = 0;
+    }
+    if(ub > DBSIZE){
+        ub = DBSIZE-1;
+    }
     // int id;
     key_t key1, key2, key3;
     key1 = 9999;

@@ -1,3 +1,20 @@
 86317263,John Blakeman,B- C- C,1.17
-50665205,Barbara Smith,A B B-,2.83
-50665204,Greard Higgs,A,4
+50665205,Barbara Smith,A C,2.50
+50665204,Greard Higgs,A,4.00
+50665214,Mengjie Shen,A,4.00
+50665314,Thomas Wei,A B B-,2.83
+16317363,Randall Wise,A,4.00
+26317363,Paula Graves,A C B B+,2.62
+36317363,Forrest Mcguire,B+ B C A-,2.50
+46317363,Calvin Allison,B B A,3.00
+56317363,Alberto Guzman,A,4.00
+66317363,Rosalie Mccormick,A,4.00
+76317363,Manuel King,A,4.00
+86317363,Irene Nichols,A,4.00
+81317363,Eva Ramos,B B+ B B+ B,2.70
+82317363,Guillermo Sutton,A A B+,3.67
+83317363,Blanca Becker,A C C-,1.83
+84317363,Chris Wood,A,4.00
+85317363,Andre Richards,A,4.00
+88317363,Lynne Shelton,A,4.00
+86717363,Mamie Lambert,B+ B B-,2.50

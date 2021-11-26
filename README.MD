@@ -28,7 +28,7 @@ a sample could be:
 
 ``` ./read -r 1 3 -d 5```
 
--r  indicates the range (lower-bound and upper-bound) of random records to be looked-up from
+-r  indicates the range (lower-bound and upper-bound) of random records to be looked-up from(Currently, it can support the number of records smaller or equal to 20!)
 filename; the range always remains smaller or equal to the number of student records stored in filename
 -d time provides the time period that the reader has to “work with the record(s)” 
 

@@ -1,3 +1,4 @@
+#define DBSIZE 20
 struct logData
 {
     // short value;   /* Supposed data stored    */

@@ -135,7 +135,7 @@ int main(){
     }
     printf("---------------------------------------------------------------------\n");
     printf("Updated version of student record written in %s\n", filename);
-    printf("You can check the logging data in the log file");
+    printf("You can check the logging data in the log filen\n");
     printf("---------------------------------------------------------------------\n");
     /*End of critical section */
       

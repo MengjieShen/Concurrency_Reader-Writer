@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     int lb;
 	int ub;
 	// int shmid;
-    int time;
+    int time = 0;
     // int id;
     // char input[100];
     key_t key1, key2, key3;
@@ -52,6 +52,12 @@ int main(int argc, char *argv[])
         }
 	}
 
+    if(lb < 0){
+        lb = 0;
+    }
+    if(ub > DBSIZE){
+        ub = DBSIZE-1;
+    }
     double t1, t2, t3; 
     struct tms tb1, tb2, tb3; 
     double ticspersec;
@@ -165,6 +171,7 @@ int main(int argc, char *argv[])
     int row_count = 0;
     int ind = 0;
     while (strlen(infoptr[row_count].ID) > 1 && row_count <= 50 && ind < total_num) {
+        printf("%d %d\n", row_count, record_list[ind]);
         if (row_count == record_list[ind]){
             // printf("here: %d", record_list[i]);
             printf("You will change student with ID %s with grades %s\n", infoptr[row_count].ID, infoptr[row_count].grades);
