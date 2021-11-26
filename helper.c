@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "helper.h"
 
 float GPA(char* grade){
@@ -34,6 +35,7 @@ float GPA(char* grade){
 }
 
 float GPA_calculator(char* grade){
+    const double EPS = 1e-6; 
     char* temp[100];
     strcpy(temp, grade);
     float sum = 0;
@@ -47,5 +49,8 @@ float GPA_calculator(char* grade){
       count ++;
       token = strtok(NULL, " ");
     }
+    if (fabs(sum - 0) < EPS){
+            return 0;
+        }
     return sum/count;
 }

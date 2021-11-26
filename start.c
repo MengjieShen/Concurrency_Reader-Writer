@@ -31,7 +31,6 @@ int main(){
     const char* fileName = "student.txt";
     FILE* studentFile;
     struct studentInfo* infoptr;
-    // struct studentInfo arr[50];
 
     // initialize there semaphores
 
@@ -64,8 +63,8 @@ int main(){
     }
 
     //attach the memory segment
-    struct logData *p = (struct logData *) shmat(shmID, NULL, 0);
-    if((int) p < 0){
+    struct logData *logptr = (struct logData *) shmat(shmID, NULL, 0);
+    if((int) logptr < 0){
         printf("shmat() failed \n");
         exit(1);
     }
@@ -125,5 +124,18 @@ int main(){
     }
     printf("Shared memory initialized and file loaded.\n");
     fclose(studentFile);
+
+    //initialized the log data
+    logptr->reads = 0;
+    logptr->writes = 0;
+    logptr->ofRecsProcessed = 0;
+    logptr->totalReadTime = 0;
+    logptr->totalWriteTime = 0;
+    logptr->max_delay = 0;
+
+
+    shmdt(logptr); 
+    shmdt(readptr); 
+    shmdt(infoptr);
     return 0;
 }

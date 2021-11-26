@@ -1,0 +1,3 @@
+use make end 
+Please execute after all writers and readers have finished execution. 
+It will end the program, print out the program statistics. It will save the updated student record in the filename you specified using interface.

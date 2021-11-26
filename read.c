@@ -7,6 +7,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
+#include <sys/times.h> /* times() */ 
 #include "helper.h"
 #define SHMSIZE 1024 //size of shared memory
 
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
         }
 	}
 
-    int id;
+    // int id;
     key_t key1, key2, key3;
     key1 = 9999;
     key2 = 41777;
@@ -48,6 +49,14 @@ int main(int argc, char *argv[])
     int readCount;
     int* readptr;
 
+
+    double t1, t2, t3; 
+    struct tms tb1, tb2, tb3; 
+    double ticspersec;
+    ticspersec = (double) sysconf(_SC_CLK_TCK); 
+    t1 = (double) times(&tb1);
+
+    printf("#########Program start... Please wait...##############\n");
     sem_t *sem1 = sem_open("/order", O_CREAT, 0666, 1);
     sem_t *sem2 = sem_open("/wrt", O_CREAT, 0666, 1);
     sem_t *sem3 = sem_open("/mutex", O_CREAT, 0666, 1);
@@ -64,8 +73,8 @@ int main(int argc, char *argv[])
     }
 
     //attach the memory segment
-    struct logData *p = (struct logData *) shmat(shmID, NULL, 0);
-    if((int) p < 0){
+    struct logData *logptr = (struct logData *) shmat(shmID, NULL, 0);
+    if(logptr < 0){
         printf("shmat() failed \n");
         exit(1);
     }
@@ -94,13 +103,21 @@ int main(int argc, char *argv[])
         perror("create: shmat failed for read_count");
         exit(2);
     }
-    // printf("here\n");
     sem_wait(sem1);
     sem_wait(sem3);
 
+    *readptr += 1;
+    if (*readptr == 1){
+        sem_wait(sem2);
+    }
+
+    sem_post(sem1);
+    sem_post(sem3);
 
     /*Beginning of critical section */
+    t2 = (double) times(&tb2);
     int total_num;
+    printf("reader total num: %d", total_num);
     total_num = (rand() % (ub - lb + 1))+1;
     int record_list[total_num];
     for (int i = 0; i<total_num; i++){
@@ -109,7 +126,7 @@ int main(int argc, char *argv[])
     }
     
     //remove duplicate 
-    int i, j,temp;
+    int i, j;
        for(i=0;i<total_num;i++){
            for(j=i+1;j<total_num;j++){
             if(record_list[i]==record_list[j]){
@@ -123,7 +140,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i< 50; i++){
         if (row_count == record_list[i]){
             // printf("row count test: %d", row_count);
-            printf("ID: %s Student Name:%s grades: %s GPA: %.2lf\n",
+            printf("ID: %s Student Name: %s grades: %s GPA: %.2lf\n",
                     infoptr[row_count].ID, infoptr[row_count].name, infoptr[row_count].grades, infoptr[row_count].GPA);
         }
         if(strncmp(infoptr[row_count].ID, "", 1) == 0){
@@ -136,16 +153,15 @@ int main(int argc, char *argv[])
     // printf("total_num: %d\n", total_num);
 
     sleep(time);
-    /*End of critical section */
-    *readptr += 1;
-    if (*readptr == 1){
-        sem_wait(sem2);
+    t3 = (double) times(&tb3);
+    printf("Program ended! Initiation at %.2lf, Termination at %.2lf, waiting time: %.2lf, execution time: %.2lf.\n", t1/ticspersec, t3/ticspersec, (t2 - t1)/ticspersec, (t3-t2)/ticspersec);
+    logptr->reads += 1;
+    logptr->totalReadTime += (t3-t2)/ticspersec;
+    logptr ->ofRecsProcessed += total_num;
+    if (logptr->max_delay < (t2 - t1)/ticspersec){
+        logptr->max_delay = (t2 - t1)/ticspersec;
     }
-
-    sem_post(sem1);
-    sem_post(sem3);
-
-    // printf("Data read from memory: %d\n",*readptr); 
+    /*End of critical section */
       
     sem_wait(sem3);
     *readptr -= 1;
@@ -155,8 +171,10 @@ int main(int argc, char *argv[])
     sem_post(sem3);
     
     //detach from shared memory  
-    shmdt(p); 
+
+    shmdt(logptr); 
     shmdt(readptr); 
+    shmdt(infoptr);
     
     // destroy the shared memory 
     // shmctl(shmid,IPC_RMID,NULL); 

@@ -1,10 +1,13 @@
 struct logData
 {
-    short value;   /* Supposed data stored    */
-    long* activeProcess; /* Array of active processes */
-    long reads;    /* Sum of read operations  */
-    long writes;   /* Sum of write operations */
-    long ofRecsProcessed; /* Record processed */
+    // short value;   /* Supposed data stored    */
+    // long* activeProcess; /* Array of active processes */
+    int reads;    /* Sum of read operations  */
+    int writes;   /* Sum of write operations */
+    int ofRecsProcessed; /* Record processed */
+    float totalReadTime;
+    float totalWriteTime;
+    float max_delay;
 };
 
 struct studentInfo
