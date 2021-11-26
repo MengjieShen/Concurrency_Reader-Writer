@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <string.h>
 #include <semaphore.h>
 #include "helper.h"
 
@@ -19,25 +20,104 @@ int main(){
     sem_t *sem1;
     sem_t *sem2;
     sem_t *sem3;
+    char filename[] = "save.txt";
+    struct studentInfo* infoptr;
+    FILE* save_file;
 
     //remove shared memory of log data
     key_t key1;
     key1 = 9999; 
     shmID = shmget(key1, sizeof(struct logData) , 0666|IPC_CREAT);
-    shmctl(shmID,IPC_RMID,NULL);
-
-    //remove shared memory of student data
+    if (shmID < 0)
+    {
+        perror("shmget failure");
+        exit(1);
+    }
+    struct logData *logptr = (struct logData *) shmat(shmID, NULL, 0);
+    if(logptr < 0){
+        printf("shmat() failed \n");
+        exit(1);
+    }
     key_t key2;
     key2 = 41777;
     infoID = shmget(key2, sizeof(struct studentInfo)*50, 0666|IPC_CREAT);
-    shmctl(infoID,IPC_RMID,NULL);
+    if (infoID < 0) {
+        perror("create: shmget failed");
+        exit(1);
+    }
+
+    infoptr = (struct studentInfo*) shmat(infoID, 0, 0);
+    if (infoptr <= (struct studentInfo*)(0)) {
+        perror("create: shmat failed");
+        exit(2);
+    }
+    
 
     key_t key3;
     key3 = 23;
     readCount = shmget(key3, sizeof(int), 0666|IPC_CREAT);
-    shmctl(readCount,IPC_RMID,NULL);
+    if (readCount < 0) {
+        perror("create: shmget failed for read_count");
+        exit(1);
+    }
+    readptr = (int*)shmat(readCount, 0, 0);
+    if (readptr <= (int*)(0)) {
+        perror("create: shmat failed for read_count");
+        exit(2);
+    }
+
+
+    save_file = fopen(filename, "w");
+    if (save_file == NULL)
+    {
+        fprintf(stderr, "Couldn't open file\n");
+        exit(1);
+    }
+    sem_wait(sem1);
+    sem_wait(sem3);
+
+    *readptr += 1;
+    if (*readptr == 1){
+        sem_wait(sem2);
+    }
+
+    sem_post(sem1);
+    sem_post(sem3);
+
+    /*Beginning of critical section */
+    printf("------------------------------Statistics:--------------------------\n");
+    printf("number of readers processed: %d\n",logptr->reads);
+    printf("average duration of readers: %.2lf\n",logptr->totalReadTime/logptr->reads);
+    printf("number of writers processed: %d\n",logptr->writes);
+    printf("average duration of writers: %.2lf\n",logptr->totalWriteTime/logptr->writes);
+    printf("maximum delay recorded for starting the work of either a reader or a writer: %.2lf\n", logptr->max_delay);
+    printf("sum number of records either accessed or modified: %d\n", logptr->ofRecsProcessed);
+
+    // printf("Write updated version to the file %s", filename);
+    int row = 0;
+    while (strlen(infoptr[row].ID) > 1 && row <= 50) {
+        fprintf(save_file, "%s,%s,%s,%.2lf\n",
+            infoptr[row].ID, infoptr[row].name, infoptr[row].grades, infoptr[row].GPA);
+        row += 1;
+    }
+    printf("updated version of student record written in %s\n", filename);
+    /*End of critical section */
+      
+    sem_wait(sem3);
+    *readptr -= 1;
+    if (*readptr == 0){
+        sem_post(sem2);
+    }
+    sem_post(sem3);
 
     
+    //delete and detech shared memory
+    shmdt(logptr); 
+    shmdt(readptr); 
+    shmdt(infoptr);
+    shmctl(shmID,IPC_RMID,NULL);
+    shmctl(infoID,IPC_RMID,NULL);
+    shmctl(readCount,IPC_RMID,NULL);
     // Close the Semaphores
     sem1 = sem_open("/order", 1);
     if(sem1 == SEM_FAILED){
@@ -60,5 +140,7 @@ int main(){
     sem_unlink("/wrt");
     sem_close(sem3);
     sem_unlink("/mutex");
-    printf("Shared memory cleaned...\n");
+    printf("Program ended and shared memory cleaned...\n");
+    
+
 }

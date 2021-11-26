@@ -117,12 +117,12 @@ int main(int argc, char *argv[])
     /*Beginning of critical section */
     t2 = (double) times(&tb2);
     int total_num;
-    printf("reader total num: %d", total_num);
     total_num = (rand() % (ub - lb + 1))+1;
+    printf("reader total num: %d", total_num);
     int record_list[total_num];
     for (int i = 0; i<total_num; i++){
         record_list[i] = (rand() %(ub - lb + 1)) + lb;
-        // printf("test: %d \n",record_list[i]);
+        printf("test: %d \n",record_list[i]);
     }
     
     //remove duplicate 
@@ -137,14 +137,13 @@ int main(int argc, char *argv[])
     }
 
     int row_count = 0;
-    for (int i = 0; i< 50; i++){
-        if (row_count == record_list[i]){
+    int ind = 0;
+    while (strlen(infoptr[row_count].ID) > 1 && row_count <= 50) {
+        if (row_count == record_list[ind]){
             // printf("row count test: %d", row_count);
             printf("ID: %s Student Name: %s grades: %s GPA: %.2lf\n",
                     infoptr[row_count].ID, infoptr[row_count].name, infoptr[row_count].grades, infoptr[row_count].GPA);
-        }
-        if(strncmp(infoptr[row_count].ID, "", 1) == 0){
-            break;
+            ind++;
         }
         row_count ++;
     }

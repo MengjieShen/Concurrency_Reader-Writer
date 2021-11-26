@@ -130,24 +130,22 @@ int main(int argc, char *argv[])
 
     printf("You will change %d students record.\n", total_num);
 
-    int list_count = 0;
-    for (int i = 0; i < 50; i++){
-        if (i == record_list[list_count]){
+    // int list_count = 0;
+    int row_count = 0;
+    int ind = 0;
+    while (strlen(infoptr[row_count].ID) > 1 && row_count <= 50) {
+        if (row_count == record_list[ind]){
             // printf("here: %d", record_list[i]);
-            printf("You will change student with ID %s with grades %s\n", infoptr[i].ID, infoptr[i].grades);
+            printf("You will change student with ID %s with grades %s\n", infoptr[row_count].ID, infoptr[row_count].grades);
             printf("Please type in the updated grade and split with the blank space between each grade: \n Example: A A B+.\n"); 
             scanf("%[^\n]%*c", &modi_grades);
-            strcpy(infoptr[i].grades, modi_grades);
-            infoptr[i].GPA = GPA_calculator(modi_grades);
-            printf("Data modified in memory: ID: %s Student Name: %s grades: %s GPA: %lf,\n",infoptr[i].ID, infoptr[i].name, infoptr[i].grades, infoptr[i].GPA);
-            list_count ++;
+            strcpy(infoptr[row_count].grades, modi_grades);
+            infoptr[row_count].GPA = GPA_calculator(modi_grades);
+            printf("Data modified in memory: ID: %s Student Name: %s grades: %s GPA: %lf,\n",infoptr[row_count].ID, infoptr[row_count].name, infoptr[row_count].grades, infoptr[row_count].GPA);
+            ind ++;
             strcpy(modi_grades,"");
         }
-        
-        if(strncmp(infoptr[i].ID, "", 1) == 0){
-            break;
-        }
-        
+        row_count++;
     }
     sleep(time);
     t3 = (double) times(&tb3);

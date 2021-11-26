@@ -64,7 +64,7 @@ int main(){
 
     //attach the memory segment
     struct logData *logptr = (struct logData *) shmat(shmID, NULL, 0);
-    if((int) logptr < 0){
+    if(logptr < 0){
         printf("shmat() failed \n");
         exit(1);
     }
