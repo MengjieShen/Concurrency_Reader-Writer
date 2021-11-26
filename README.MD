@@ -3,11 +3,11 @@
 
 ## Design principle
 
-I implemented shared memory to store the semaphores, statistics. I also loaded up the student record information into the shared memory, therefore, every time, the reader or the writer need to access the record, they can directly get it from the shared memory instead of reading the student record file again. As a result, I made a small modifications regarding the interface design. Users need to specify the filename when calling the function start. For calling read function or write function, there's no need to input the filename since it's already in the shared memory. 
+I set up the three separate shared memory segments and four semaphore in ```start.c```. For three shared memory segments, one is for storing the statistics of the processes executed, one is for storing the student information, one is for atomic operation on appending to the log file and the other one is for storing the read count variable. For three semaphores, xxxxx
 
-Semaphore-wise, I introduced three semaphores.
+Since, I loaded up the student record information into the shared memory, therefore, every time, the reader or the writer need to access the record, they can directly get it from the shared memory instead of reading the student record file again. As a result, I made a small modifications regarding the interface design. Users need to specify the filename when calling the function start. For calling read function or write function, there's no need to input the filename since it's already in the shared memory. 
 
-I also implemented the logging mechanism in the form of an append-only file. It records the statistics of each process. It will append the log when program invokes, starts the critical section and program ends. 
+I also implemented the logging mechanism in the form of an append-only file. It records the statistics of each process. It will append the log when program invokes, starts the critical section and program ends. I use one binary semaphore to ensure the atomic operation of appending to the log.
 
 ## How to compile and run my program
 ### First, you need to initiate the program through command lines:
@@ -19,7 +19,7 @@ a sample could be:
 
 -f indicates the name of the student record file that you want to load. The default file is ```student.txt```. Please follow the same structure of the file ```student.txt``` if you want to load other file.
 
-### Next, you can use the function of reading records and writing records.
+### Next, you can use the function of reading records and writing records:
 ``` ./read -r lb ub -d time```
 
 ``` ./write -r lb ub -d time```
@@ -32,7 +32,7 @@ a sample could be:
 filename; the range always remains smaller or equal to the number of student records stored in filename
 -d time provides the time period that the reader has to “work with the record(s)” 
 
-### Finally, you can call end function to purge shared memory segments and semaphores
+### Finally, you can call end function to purge shared memory segments and semaphores:
 ``` ./end -f filename```
 
 You can call the function after you have done with reading and writing. It will end the program, purge the shared memory segments and semaphores, print out the program statistics and save the modified student record. It will save the updated student record in the filename you specified using interface.

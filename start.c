@@ -20,7 +20,7 @@ void sleep_exp_time(void)
   usleep(usecs);
 }
 
-int main(){
+int main(int argc, char *argv[]){
     int shmID;
     int infoID;
     int readCount;
@@ -28,9 +28,17 @@ int main(){
     sem_t *sem1;
     sem_t *sem2;
     sem_t *sem3;
+    sem_t *sem4;
     const char* fileName = "student.txt";
     FILE* studentFile;
     struct studentInfo* infoptr;
+
+    for (int q = 0; q < argc; q++)
+	{
+		if (strcmp(argv[q], "-f") == 0){
+            fileName = argv[q + 1];
+        }
+	}
 
     // initialize there semaphores
 
@@ -50,6 +58,11 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
+    sem4 = sem_open("/log", O_CREAT, 0666, 1);
+    if(sem4 == SEM_FAILED){
+        perror("order");
+        exit(EXIT_FAILURE);
+    }
     //initialize and allocate the shared memory segment for log Data
     key_t key1;
     key1 = 9999; 

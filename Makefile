@@ -10,9 +10,9 @@ write: write.c helper.h
 	gcc -Wall -o write write.c helper.c -lpthread
 
 reader: read 
-	./read -f "student.txt" -r 0 1 -s 23 -d 10
+	./read -r 0 2 -d 10
 
 writer: write
-	./write -f "student.txt" -r 0 2 -s 23 -d 1
+	./write -r 0 2 -d 1
 clean:
-	rm -f start end read write *~ core
+	rm -f start end read write log save.txt *~ core

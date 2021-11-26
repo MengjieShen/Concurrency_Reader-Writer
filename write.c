@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <semaphore.h>
 #include <sys/times.h> /* times() */ 
 #include <string.h>
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
 { 
     int lb;
 	int ub;
-	int shmid;
+	// int shmid;
     int time;
     // int id;
     // char input[100];
@@ -29,21 +30,23 @@ int main(int argc, char *argv[])
     int infoID;
     int readCount;
     int* readptr;
-    const char* fileName;
+    // const char* fileName;
     struct studentInfo* infoptr;
     char* modi_grades[100];
+    char log[] = "log";
+    int fd;
 	for (int q = 0; q < argc; q++)
 	{
-		if (strcmp(argv[q], "-f") == 0){
-            fileName = argv[q + 1];
-        }
+		// if (strcmp(argv[q], "-f") == 0){
+        //     fileName = argv[q + 1];
+        // }
 		if (strcmp(argv[q], "-r") == 0){
             lb = atoi(argv[q + 1]);
 			ub = atoi(argv[q + 2]);         
         }
-		if (strcmp(argv[q], "-s") == 0){
-            shmid = atoi(argv[q + 1]);
-        }
+		// if (strcmp(argv[q], "-s") == 0){
+        //     shmid = atoi(argv[q + 1]);
+        // }
 		if (strcmp(argv[q], "-d") == 0){
             time = atoi(argv[q + 1]);
         }
@@ -54,13 +57,27 @@ int main(int argc, char *argv[])
     double ticspersec;
     ticspersec = (double) sysconf(_SC_CLK_TCK); 
     t1 = (double) times(&tb1);
-    printf("#########Program start... Please wait...##############\n");
+    printf("----------------Program start... Please wait...----------------\n");
 
     sem_t *sem1 = sem_open("/order", O_CREAT, 0666, 1);
     sem_t *sem2 = sem_open("/wrt", O_CREAT, 0666, 1);
-    sem_t *sem3 = sem_open("/mutex", O_CREAT, 0666, 1);
+    sem_t *sem4 = sem_open("/log", O_CREAT, 0666, 1);
+    // sem_t *sem3 = sem_open("/mutex", O_CREAT, 0666, 1);
 
-    
+    /* open the log file */
+    fd = open(log, O_WRONLY|O_CREAT|O_APPEND, 0666);
+    // printf("test lpg: %d", Log);
+    if (fd < 0)
+    {
+        fprintf(stderr, "Couldn't open file\n");
+        exit(1);
+    }
+    // strcpy(buf, "Process %d entered at time %.lf Type: Write.\n ", getpid(), t1/ticspersec);
+    sem_wait(sem4);
+    char writeIn1[100];
+    sprintf(writeIn1, "Process %d entered at time %.lf Type: Write.\n ", getpid(), t1/ticspersec);
+    write(fd, writeIn1,strlen(writeIn1));
+    sem_post(sem4);
     /* load the shared memory */
     shmID = shmget(key1, sizeof(struct logData) , 0666|IPC_CREAT);
 
@@ -109,7 +126,13 @@ int main(int argc, char *argv[])
     sem_post(sem1);
 
     /* start of the critical section */
+    
     t2 = (double) times(&tb2);
+    sem_wait(sem4);
+    char writeIn2[100];
+    sprintf(writeIn2, "Process %d started to execute at %.lf Type: Write.\n ", getpid(), t2/ticspersec);
+    write(fd, writeIn2, strlen(writeIn2));
+    sem_post(sem4);
     int total_num;
     total_num = (rand() % (ub - lb + 1))+1;
     int record_list[total_num];
@@ -118,7 +141,7 @@ int main(int argc, char *argv[])
     }
     
     //remove duplicate 
-    int i, j;
+    int i, j, temp;
        for(i=0;i<total_num;i++){
            for(j=i+1;j<total_num;j++){
             if(record_list[i]==record_list[j]){
@@ -127,21 +150,32 @@ int main(int argc, char *argv[])
             }
         }
     }
-
+    //sort the list
+    for (i = 0; i <=total_num - 1; i++)          
+        for (j = total_num-2; j >=i; j--) 
+            if (record_list[j]>record_list[j + 1])          
+               {
+               temp=record_list[j];
+               record_list[j]=record_list[j+1];
+               record_list[j+1]=temp;}
+    
     printf("You will change %d students record.\n", total_num);
-
+    // fprintf(Log, "\nProgram type: writer Process ID: %d\nProgram changed %d records.\n", getpid(), total_num);
     // int list_count = 0;
     int row_count = 0;
     int ind = 0;
-    while (strlen(infoptr[row_count].ID) > 1 && row_count <= 50) {
+    while (strlen(infoptr[row_count].ID) > 1 && row_count <= 50 && ind < total_num) {
         if (row_count == record_list[ind]){
             // printf("here: %d", record_list[i]);
             printf("You will change student with ID %s with grades %s\n", infoptr[row_count].ID, infoptr[row_count].grades);
+            // fprintf(Log,"Change student ID %s's grade from %s ", infoptr[row_count].ID, infoptr[row_count].grades);
             printf("Please type in the updated grade and split with the blank space between each grade: \n Example: A A B+.\n"); 
+            // fflush(stdin);
             scanf("%[^\n]%*c", &modi_grades);
             strcpy(infoptr[row_count].grades, modi_grades);
             infoptr[row_count].GPA = GPA_calculator(modi_grades);
             printf("Data modified in memory: ID: %s Student Name: %s grades: %s GPA: %lf,\n",infoptr[row_count].ID, infoptr[row_count].name, infoptr[row_count].grades, infoptr[row_count].GPA);
+            // fprintf(Log, "to grade %s\n", infoptr[row_count].grades);
             ind ++;
             strcpy(modi_grades,"");
         }
@@ -149,7 +183,15 @@ int main(int argc, char *argv[])
     }
     sleep(time);
     t3 = (double) times(&tb3);
-    printf("Program ended! Initiation at %.2lf, Termination at %.2lf, waiting time: %.2lf, execution time: %.2lf.\n", t1/ticspersec, t3/ticspersec, (t2 - t1)/ticspersec, (t3-t2)/ticspersec);
+    sem_wait(sem4);
+    char writeIn3[100];
+    
+    sprintf(writeIn3, "Process %d ended at %.lf Type: Write.\n ", getpid(), t3/ticspersec); 
+    write(fd, writeIn3, strlen(writeIn3));
+    sem_post(sem4);
+    printf("------------------------Statistics--------------------------\n");
+    printf("Initiation at %.2lf\nTermination at %.2lf\nwaiting time: %.2lf\nexecution time: %.2lf.\nProgram ended!\n", t1/ticspersec, t3/ticspersec, (t2 - t1)/ticspersec, (t3-t2)/ticspersec);
+    // fprintf(Log, "Execution starts at %.2lf, terminated at %.2lf, waited for %.2f sec.\n\n", t1/ticspersec, t3/ticspersec, (t2 - t1)/ticspersec);
     logptr->writes += 1;
     logptr->totalWriteTime += (t3-t2)/ticspersec;
     logptr ->ofRecsProcessed += total_num;
@@ -163,6 +205,6 @@ int main(int argc, char *argv[])
     shmdt(logptr); 
     shmdt(readptr); 
     shmdt(infoptr);
-  
+    close(fd);
     return 0; 
 } 
