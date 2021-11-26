@@ -7,7 +7,7 @@ I implemented shared memory to store the semaphores, statistics. I also loaded u
 
 Semaphore-wise, I introduced three semaphores.
 
-
+I also implemented the logging mechanism in the form of an append-only file. It records the statistics of each process. It will append the log when program invokes, starts the critical section and program ends. 
 
 ## How to compile and run my program
 ### First, you need to initiate the program through command lines:
@@ -21,7 +21,8 @@ a sample could be:
 
 ### Next, you can use the function of reading records and writing records.
 ``` ./read -r lb ub -d time```
-``` ./write --r lb ub -d time```
+
+``` ./write -r lb ub -d time```
 
 a sample could be:
 
