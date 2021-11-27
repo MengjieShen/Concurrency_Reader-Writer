@@ -49,18 +49,18 @@ int main(int argc, char *argv[]){
     }
     sem2 = sem_open("/wrt", O_CREAT, 0666, 1);
     if(sem2 == SEM_FAILED){
-        perror("order");
+        perror("wrt");
         exit(EXIT_FAILURE);
     }
     sem3 = sem_open("/mutex", O_CREAT, 0666, 1);
     if(sem3 == SEM_FAILED){
-        perror("order");
+        perror("mutex");
         exit(EXIT_FAILURE);
     }
 
     sem4 = sem_open("/log", O_CREAT, 0666, 1);
     if(sem4 == SEM_FAILED){
-        perror("order");
+        perror("log");
         exit(EXIT_FAILURE);
     }
     //initialize and allocate the shared memory segment for log Data
