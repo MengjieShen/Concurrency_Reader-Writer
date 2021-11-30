@@ -46,3 +46,6 @@ Notice that, to update the record, please strictly follow the rule that you need
 You can call the function after you have done with reading and writing. It will end the program, purge the shared memory segments and semaphores, print out the program statistics and save the modified student record. It will save the updated student record in the filename you specified using interface.
 
 The default file is ```save.txt```. You can also specify any other file that you want. If you input the same filename as the original student record, it will overwrite the original version.
+
+## Output
+You can see the running statistics right after you invoke ```./end```. You can check the updated student record at the filename you specified when you invoked ```./end```. The program will also generate a ```log``` file to store the log data.
