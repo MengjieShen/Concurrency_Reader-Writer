@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
+#include <math.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <semaphore.h>
 #include <string.h>
@@ -14,11 +16,11 @@
 #define FACTOR 10e4 /* Used to generate random microseconds */
 
 //sleeps for a random number of microseconds
-void sleep_exp_time(void)
-{
-  unsigned int usecs = (-log(1.0 * rand() / RAND_MAX) / FACTOR * 10e6);
-  usleep(usecs);
-}
+// void sleep_exp_time(void)
+// {
+//   unsigned int usecs = (-log(1.0 * rand() / RAND_MAX) / FACTOR * 10e6);
+//   usleep(usecs);
+// }
 
 int main(int argc, char *argv[]){
     int shmID;

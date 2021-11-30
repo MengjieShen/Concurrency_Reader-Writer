@@ -15,7 +15,7 @@ struct studentInfo
 {
     char ID[20];
     char name[20];
-    char grades[24];
+    char grades[50];
     float GPA;
 };
 

@@ -19,24 +19,16 @@ int main(int argc, char *argv[])
     // check customized command
 	int lb;
 	int ub;
-	// int shmid;
     int time = 0;
-    // const char* fileName;
     struct studentInfo* infoptr;
     char log[] = "log";
     int fd;
 	for (int q = 0; q < argc; q++)
 	{
-		// if (strcmp(argv[q], "-f") == 0){
-        //     fileName = argv[q + 1];
-        // }
 		if (strcmp(argv[q], "-r") == 0){
             lb = atoi(argv[q + 1]);
 			ub = atoi(argv[q + 2]);         
         }
-		// if (strcmp(argv[q], "-s") == 0){
-        //     shmid = atoi(argv[q + 1]);
-        // }
 		if (strcmp(argv[q], "-d") == 0){
             time = atoi(argv[q + 1]);
         }
@@ -144,23 +136,23 @@ int main(int argc, char *argv[])
     sem_post(sem4);
     int total_num;
     total_num = (rand() % (ub - lb + 1))+1;
-    // printf("reader total num: %d", total_num);
     int record_list[total_num];
     for (int i = 0; i<total_num; i++){
         record_list[i] = (rand() %(ub - lb + 1)) + lb;
-        // printf("test: %d \n",record_list[i]);
     }
     
     //remove duplicate 
     int i, j, temp;
-       for(i=0;i<total_num;i++){
-           for(j=i+1;j<total_num;j++){
-            if(record_list[i]==record_list[j]){
-                record_list[j]=record_list[total_num-1];
-                total_num--;
+    for (i = 0; i<total_num; i++){
+        for (j = i +1; j < total_num; j++){
+            while(record_list[i] == record_list[j]){
+                record_list[j] = record_list[total_num-1];
+                // swap(&record_list[i], &record_list[j]);
+                total_num --;
             }
         }
     }
+    
     //sort the list
     for (i = 0; i <=total_num - 1; i++)          
         for (j = total_num-2; j >=i; j--) 
@@ -181,9 +173,6 @@ int main(int argc, char *argv[])
         row_count++;
     }
 
-
-    // printf("total_num: %d\n", total_num);
-
     sleep(time);
     t3 = (double) times(&tb3);
     printf("------------------------Statistics--------------------------\n");
@@ -193,7 +182,6 @@ int main(int argc, char *argv[])
     sprintf(writeIn3, "Process %d ended at %.lf Type: Read.\n ", getpid(), t3/ticspersec); 
     write(fd, writeIn3, strlen(writeIn3));
     sem_post(sem4);
-    // fprintf(Log, "\nProgram type: reader Process ID: %d\n Execution starts at %.2lf\nterminated at %.2lf\nwaited for %.2f secaccessed %d records.\n", getpid(),t1/ticspersec, t3/ticspersec, (t2 - t1)/ticspersec, total_num);
     logptr->reads += 1;
     logptr->totalReadTime += (t3-t2)/ticspersec;
     logptr ->ofRecsProcessed += total_num;
@@ -215,8 +203,6 @@ int main(int argc, char *argv[])
     shmdt(readptr); 
     shmdt(infoptr);
     
-    // destroy the shared memory 
-    // shmctl(shmid,IPC_RMID,NULL); 
     close(fd);
     return 0; 
 } 

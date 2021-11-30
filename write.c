@@ -37,16 +37,10 @@ int main(int argc, char *argv[])
     int fd;
 	for (int q = 0; q < argc; q++)
 	{
-		// if (strcmp(argv[q], "-f") == 0){
-        //     fileName = argv[q + 1];
-        // }
 		if (strcmp(argv[q], "-r") == 0){
             lb = atoi(argv[q + 1]);
 			ub = atoi(argv[q + 2]);         
         }
-		// if (strcmp(argv[q], "-s") == 0){
-        //     shmid = atoi(argv[q + 1]);
-        // }
 		if (strcmp(argv[q], "-d") == 0){
             time = atoi(argv[q + 1]);
         }
@@ -68,7 +62,6 @@ int main(int argc, char *argv[])
     sem_t *sem1 = sem_open("/order", O_CREAT, 0666, 1);
     sem_t *sem2 = sem_open("/wrt", O_CREAT, 0666, 1);
     sem_t *sem4 = sem_open("/log", O_CREAT, 0666, 1);
-    // sem_t *sem3 = sem_open("/mutex", O_CREAT, 0666, 1);
 
     /* open the log file */
     fd = open(log, O_WRONLY|O_CREAT|O_APPEND, 0666);
@@ -145,17 +138,18 @@ int main(int argc, char *argv[])
     for (int i = 0; i<total_num; i++){
         record_list[i] = (rand() %(ub - lb + 1)) + lb;
     }
-    
     //remove duplicate 
     int i, j, temp;
-       for(i=0;i<total_num;i++){
-           for(j=i+1;j<total_num;j++){
-            if(record_list[i]==record_list[j]){
-                record_list[j]=record_list[total_num-1];
-                total_num--;
+    for (i = 0; i<total_num; i++){
+        for (j = i +1; j < total_num; j++){
+            while(record_list[i] == record_list[j]){
+                record_list[j] = record_list[total_num-1];
+                // swap(&record_list[i], &record_list[j]);
+                total_num --;
             }
         }
     }
+    
     //sort the list
     for (i = 0; i <=total_num - 1; i++)          
         for (j = total_num-2; j >=i; j--) 
@@ -166,23 +160,21 @@ int main(int argc, char *argv[])
                record_list[j+1]=temp;}
     
     printf("You will change %d students record.\n", total_num);
-    // fprintf(Log, "\nProgram type: writer Process ID: %d\nProgram changed %d records.\n", getpid(), total_num);
-    // int list_count = 0;
+
     int row_count = 0;
     int ind = 0;
     while (strlen(infoptr[row_count].ID) > 1 && row_count <= 50 && ind < total_num) {
-        printf("%d %d\n", row_count, record_list[ind]);
+        // printf("%d %d\n", row_count, record_list[ind]);
         if (row_count == record_list[ind]){
-            // printf("here: %d", record_list[i]);
             printf("You will change student with ID %s with grades %s\n", infoptr[row_count].ID, infoptr[row_count].grades);
-            // fprintf(Log,"Change student ID %s's grade from %s ", infoptr[row_count].ID, infoptr[row_count].grades);
             printf("Please type in the updated grade and split with the blank space between each grade: \n Example: A A B+.\n"); 
             // fflush(stdin);
             scanf("%[^\n]%*c", &modi_grades);
             strcpy(infoptr[row_count].grades, modi_grades);
             infoptr[row_count].GPA = GPA_calculator(modi_grades);
+            fflush(stdin);
+            sleep(1);
             printf("Data modified in memory: ID: %s Student Name: %s grades: %s GPA: %lf,\n",infoptr[row_count].ID, infoptr[row_count].name, infoptr[row_count].grades, infoptr[row_count].GPA);
-            // fprintf(Log, "to grade %s\n", infoptr[row_count].grades);
             ind ++;
             strcpy(modi_grades,"");
         }
@@ -198,7 +190,6 @@ int main(int argc, char *argv[])
     sem_post(sem4);
     printf("------------------------Statistics--------------------------\n");
     printf("Initiation at %.2lf\nTermination at %.2lf\nwaiting time: %.2lf\nexecution time: %.2lf.\nProgram ended!\n", t1/ticspersec, t3/ticspersec, (t2 - t1)/ticspersec, (t3-t2)/ticspersec);
-    // fprintf(Log, "Execution starts at %.2lf, terminated at %.2lf, waited for %.2f sec.\n\n", t1/ticspersec, t3/ticspersec, (t2 - t1)/ticspersec);
     logptr->writes += 1;
     logptr->totalWriteTime += (t3-t2)/ticspersec;
     logptr ->ofRecsProcessed += total_num;
@@ -208,7 +199,6 @@ int main(int argc, char *argv[])
     /* end of the critical section */
     sem_post(sem2);
     //detach from shared memory  
-
     shmdt(logptr); 
     shmdt(readptr); 
     shmdt(infoptr);

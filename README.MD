@@ -12,7 +12,10 @@ Since there are three separate shared memory segments, it's very unconvenient to
 I also implemented the logging mechanism in the form of an append-only file. It records the statistics of each process. It will append the log when program invokes, starts the critical section and program ends. I use one binary semaphore to ensure the atomic operation of appending to the log.
 
 ## How to compile and run my program
-### First, you need to initiate the program through command lines:
+### First,compile the whole project use:
+```make```
+
+### Then, you need to initiate the program through command lines:
 ``` ./start -f filename```
 
 a sample could be:
@@ -30,10 +33,13 @@ a sample could be:
 
 ``` ./read -r 1 3 -d 5```
 
+``` ./write -r 1 3 -d 5```
+
 -r  indicates the range (lower-bound and upper-bound) of random records to be looked-up from(Currently, it can support the number of records smaller or equal to 20!)
 filename; the range always remains smaller or equal to the number of student records stored in filename
 -d time provides the time period that the reader has to “work with the record(s)” 
 
+Notice that, to update the record, please strictly follow the rule that you need to split each grade with the blank space, an example could be: A A B+
 ### Finally, you can call end function to purge shared memory segments and semaphores:
 ``` ./end -f filename```
 

@@ -12,18 +12,21 @@
 #include <semaphore.h>
 #include "helper.h"
 
-int main(){
+int main(int argc, char *argv[]){
     int shmID;
     int infoID;
     int readCount;
     int* readptr;
-    char filename[] = "save.txt";
+    const char* filename = "save.txt";
     struct studentInfo* infoptr;
     FILE* save_file;
 
-    // sem_t *sem1 = sem_open("/order", O_CREAT, 0666, 1);
-    // sem_t *sem2 = sem_open("/wrt", O_CREAT, 0666, 1);
-    // sem_t *sem3 = sem_open("/mutex", O_CREAT, 0666, 1);
+    for (int q = 0; q < argc; q++)
+	{
+		if (strcmp(argv[q], "-f") == 0){
+            filename = argv[q + 1];
+        }
+	}
     sem_t *sem1 = sem_open("/order", 1);
     if(sem1 == SEM_FAILED){
         perror("order");
@@ -46,16 +49,7 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
-    // sem_close(sem1);
-    // sem_unlink("/order");
-    // sem_close(sem2);
-    // sem_unlink("/wrt");
-    // sem_close(sem3);
-    // sem_unlink("/mutex");
-    // sem_close(sem4);
-    // sem_unlink("/log");
-
-    printf("Program ended and shared memory cleaned...\n");
+    printf("Please wait until all ongoing processes finished...\n");
     //remove shared memory of log data
     key_t key1;
     key1 = 9999; 
@@ -125,8 +119,6 @@ int main(){
     printf("average duration of writers: %.2lf\n",logptr->totalWriteTime/logptr->writes);
     printf("maximum delay recorded for starting the work of either a reader or a writer: %.2lf\n", logptr->max_delay);
     printf("sum number of records either accessed or modified: %d\n", logptr->ofRecsProcessed);
-
-    // printf("Write updated version to the file %s", filename);
     int row = 0;
     while (strlen(infoptr[row].ID) > 1 && row <= 50) {
         fprintf(save_file, "%s,%s,%s,%.2lf\n",
@@ -135,7 +127,7 @@ int main(){
     }
     printf("---------------------------------------------------------------------\n");
     printf("Updated version of student record written in %s\n", filename);
-    printf("You can check the logging data in the log filen\n");
+    printf("You can check the logging data in the log file\n");
     printf("---------------------------------------------------------------------\n");
     /*End of critical section */
       
